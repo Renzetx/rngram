@@ -97,13 +97,21 @@ class Connection:
 
     async def connect(self) -> None:
         for _ in range(Connection.MAX_CONNECTION_ATTEMPTS):
-            self.protocol = self.protocol_factory(
-                ipv6=self.ipv6,
-                proxy=self.proxy,
-                crypto_executor_workers=self.crypto_executor_workers,
-                loop=self.loop,
-                dc_id=self._protocol_dc_id,
-            )
+            try:
+                self.protocol = self.protocol_factory(
+                    ipv6=self.ipv6,
+                    proxy=self.proxy,
+                    crypto_executor_workers=self.crypto_executor_workers,
+                    loop=self.loop,
+                    dc_id=self._protocol_dc_id,
+                )
+            except TypeError:
+                self.protocol = self.protocol_factory(
+                    ipv6=self.ipv6,
+                    proxy=self.proxy,
+                    crypto_executor_workers=self.crypto_executor_workers,
+                    dc_id=self._protocol_dc_id,
+                )
 
             try:
                 log.info("Connecting...")
@@ -126,7 +134,8 @@ class Connection:
             raise ConnectionError
 
     async def close(self) -> None:
-        await self.protocol.close()
+        if self.protocol is not None:
+            await self.protocol.close()
         log.info("Disconnected")
 
     async def send(self, data: bytes) -> None:

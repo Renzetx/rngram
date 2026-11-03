@@ -18,6 +18,7 @@
 
 from __future__ import annotations as _annotations
 
+import asyncio
 import logging
 from binascii import crc32
 from struct import pack, unpack
@@ -34,12 +35,14 @@ log = logging.getLogger(__name__)
 class TCPFull(TCP):
     def __init__(
         self,
-        ipv6: bool,
+        ipv6: bool = False,
         proxy: Proxy | None = None,
         crypto_executor_workers: int = 1,
+        loop: asyncio.AbstractEventLoop | None = None,
         dc_id: int | None = None,
+        **kwargs,
     ) -> None:
-        super().__init__(ipv6, proxy, crypto_executor_workers, dc_id=dc_id)
+        super().__init__(ipv6, proxy, crypto_executor_workers, loop=loop, dc_id=dc_id)
 
         self.seq_no: int = 0
 
